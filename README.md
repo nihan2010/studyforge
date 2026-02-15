@@ -71,7 +71,7 @@ Whether you follow the Kerala SCERT syllabus or want to create your own custom s
 - Dark mode optimized UI
 - Clean, responsive design
 - Branded footer:  
-  *Made with Kerala with love ❤️*  
+  *Made From Kerala with love ❤️*  
   nihannajeeb.in
 
 ---
@@ -113,3 +113,4 @@ Your app will start at http://localhost:5173 by default.
  ┃ ┣ syllabusData.js
  ┃ ┣ App.jsx
  ┃ ┣ main.jsx
+
