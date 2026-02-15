@@ -1,0 +1,24 @@
+{
+  "name": "StudyForge – Kerala SCERT Smart Study Tracker",
+  "short_name": "StudyForge",
+  "description": "Smart syllabus tracker for Kerala SCERT students. Track chapters, PYQs, revision and exam preparation with analytics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#212529",
+  "theme_color": "#212529",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #0f0f0f;
+  color: #e5e5e5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, .font-brand {
+  font-family: var(--font-brand, 'Inter'), system-ui, sans-serif;
+}
+
+input[type="checkbox"] {
+  accent-color: #3b82f6;
+}
+
+body.no-animations *,
+body.no-animations *::before,
+body.no-animations *::after {
+  animation: none !important;
+  transition: none !important;
+}
