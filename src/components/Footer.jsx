@@ -4,7 +4,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-dark-muted">
         <span>© 2026 nihannajeeb</span>
         <span className="flex items-center gap-1">
-          Made with Kerala with love
+          Made From Kerala with love
           <span className="text-red-500" aria-hidden>
             <HeartIcon />
           </span>
