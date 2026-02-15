@@ -7,7 +7,7 @@ StudyForge helps students plan, track, and master their syllabus with chapter-le
 
 ## 🚀 Live Demo  
 
-🔗 https://studyforgee.netlify.app/
+🔗 https://studyforge-wheat.vercel.app/
 
 ---
 
