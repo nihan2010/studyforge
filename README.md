@@ -6,8 +6,8 @@ StudyForge helps students plan, track, and master their syllabus with chapter-le
 ---
 
 ## 🚀 Live Demo  
-*(Add your hosted link when deployed — e.g., Vercel or Netlify)*  
-🔗 https://your-studyforge-deploy.link
+
+🔗 https://studyforgee.netlify.app/
 
 ---
 
@@ -113,4 +113,5 @@ Your app will start at http://localhost:5173 by default.
  ┃ ┣ syllabusData.js
  ┃ ┣ App.jsx
  ┃ ┣ main.jsx
+
 
