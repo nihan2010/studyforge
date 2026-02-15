@@ -81,7 +81,6 @@ Whether you follow the Kerala SCERT syllabus or want to create your own custom s
 - **Frontend:** React + Vite
 - **Styling:** Tailwind CSS
 - **State Persistence:** LocalStorage
-- **Charts & Analytics:** (optional library you used)
 - **Hosting:** Deployable as PWA
 
 ---
@@ -113,5 +112,6 @@ Your app will start at http://localhost:5173 by default.
  ┃ ┣ syllabusData.js
  ┃ ┣ App.jsx
  ┃ ┣ main.jsx
+
 
 
