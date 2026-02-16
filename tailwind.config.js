@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -11,12 +12,12 @@ export default {
       },
       colors: {
         dark: {
-          bg: '#0f0f0f',
-          card: '#161616',
-          border: '#2a2a2a',
-          muted: '#6b6b6b',
-          text: '#e5e5e5',
-          accent: '#3b82f6',
+          bg: 'var(--bg)',
+          card: 'var(--card)',
+          border: 'var(--border)',
+          muted: 'var(--muted)',
+          text: 'var(--text)',
+          accent: 'var(--accent)',
         }
       },
       animation: {

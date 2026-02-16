@@ -1,21 +1,24 @@
 /**
  * @typedef {Object} Chapter
  * @property {string} id
- * @property {string} chapterName
- * @property {boolean} revised
- * @property {boolean} pyqDone
- * @property {boolean} examsAttended
- * @property {boolean} notesCompleted
+ * @property {string} title
+ * @property {string} [type] Displayed chapter type badge (e.g. "Prose", "Poem")
+ * @property {Record<string, boolean>} fields Dynamic completion fields keyed by column id
  * @property {boolean} [highPriority]
- * @property {Record<string, boolean>} [customFields]
+ */
+
+/**
+ * @typedef {Object} SubjectColumn
+ * @property {string} id Stable column identifier (used as key in Chapter.fields)
+ * @property {string} label Display name for the column
  */
 
 /**
  * @typedef {Object} Subject
  * @property {string} id
  * @property {string} name
+ * @property {SubjectColumn[]} columns
  * @property {Chapter[]} chapters
- * @property {{ id: string, label: string }[]} [customColumns]
  * @property {string} [lastUpdated] ISO date string
  * @property {string|null} [examDate] ISO date string or null
  */
@@ -40,9 +43,10 @@ export const DEFAULT_SUBJECT_NAMES = [
   'Malayalam',
 ];
 
-export const BUILTIN_COLUMNS = [
-  { key: 'revised', label: 'Revised' },
-  { key: 'pyqDone', label: 'PYQs Done' },
-  { key: 'examsAttended', label: 'Exams Attended' },
-  { key: 'notesCompleted', label: 'Notes Completed' },
+// BUILTIN_COLUMNS removed to support fully dynamic columns
+export const DEFAULT_COLUMNS = [
+  { id: 'revised', label: 'Revised' },
+  { id: 'pyqs', label: 'PYQs Done' },
+  { id: 'exams', label: 'Exams Attended' },
+  { id: 'notes', label: 'Notes Completed' },
 ];

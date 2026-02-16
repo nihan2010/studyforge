@@ -63,7 +63,7 @@ export function ProgressPanel({ subject, allSubjects = [] }) {
   const heatStyle = HEAT_CONFIG[heat] || HEAT_CONFIG.cold;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="bg-dark-card border border-dark-border rounded-lg p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium text-dark-muted uppercase tracking-wider">

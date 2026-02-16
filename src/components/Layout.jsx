@@ -27,6 +27,14 @@ export function Layout() {
     URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    if (settings.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [settings.darkMode]);
+
   return (
     <div className="min-h-screen bg-dark-bg text-dark-text flex">
       <BackupReminder onExport={handleBackupExport} />

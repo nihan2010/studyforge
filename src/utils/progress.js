@@ -1,17 +1,13 @@
-import { BUILTIN_COLUMNS } from '../types';
-
 /** Returns 0-100 progress for a single chapter based on checked fields / total fields */
 export function getChapterProgress(chapter, subject) {
-  const customCols = subject.customColumns || [];
-  const total = BUILTIN_COLUMNS.length + customCols.length;
+  const columns = subject.columns || [];
+  const total = columns.length;
   if (total === 0) return 0;
-  let checked = 0;
-  BUILTIN_COLUMNS.forEach((col) => {
-    if (chapter[col.key]) checked++;
-  });
-  customCols.forEach((col) => {
-    if (chapter.customFields?.[col.id]) checked++;
-  });
+  const fields = chapter.fields || {};
+  const checked = columns.reduce(
+    (sum, col) => sum + (fields[col.id] ? 1 : 0),
+    0
+  );
   return Math.round((checked / total) * 100);
 }
 
@@ -73,32 +69,47 @@ export function chaptersPerDayToFinish(subject) {
 
 export function getSubjectStats(subject) {
   const chapters = subject.chapters || [];
-  const customColumns = subject.customColumns || [];
+  const columns = subject.columns || [];
   const total = chapters.length;
 
-  const revised = chapters.filter((c) => c.revised).length;
-  const pyqDone = chapters.filter((c) => c.pyqDone).length;
-  const examsAttended = chapters.filter((c) => c.examsAttended).length;
-  const notesCompleted = chapters.filter((c) => c.notesCompleted).length;
-
-  const customCounts = {};
-  customColumns.forEach((col) => {
-    customCounts[col.id] = chapters.filter((c) => c.customFields?.[col.id]).length;
+  const columnCounts = {};
+  columns.forEach((col) => {
+    columnCounts[col.id] = 0;
   });
 
-  const builtinChecks = revised + pyqDone + examsAttended + notesCompleted;
-  const customChecks = customColumns.reduce(
-    (sum, col) => sum + (customCounts[col.id] || 0),
-    0
-  );
-  const totalPossible = total * (BUILTIN_COLUMNS.length + customColumns.length);
+  chapters.forEach((ch) => {
+    const fields = ch.fields || {};
+    columns.forEach((col) => {
+      if (fields[col.id]) {
+        columnCounts[col.id] = (columnCounts[col.id] || 0) + 1;
+      }
+    });
+  });
+
+  const totalPossible = total * columns.length;
+  const totalChecks = Object.values(columnCounts).reduce((sum, v) => sum + v, 0);
   const overall =
     totalPossible === 0
       ? 0
-      : Math.round(((builtinChecks + customChecks) / totalPossible) * 100);
+      : Math.round((totalChecks / totalPossible) * 100);
+
+  const revised = columnCounts.revised || 0;
+  const pyqDone = columnCounts.pyqs || 0;
+  const examsAttended = columnCounts.exams || 0;
+  const notesCompleted = columnCounts.notes || 0;
 
   const weightedMax = total * (1 + 1.5 + 2 + 1);
-  const studyScore = weightedMax === 0 ? 0 : Math.round(((revised * 1 + pyqDone * 1.5 + examsAttended * 2 + notesCompleted * 1) / weightedMax) * 100);
+  const studyScore =
+    weightedMax === 0
+      ? 0
+      : Math.round(
+        ((revised * 1 +
+          pyqDone * 1.5 +
+          examsAttended * 2 +
+          notesCompleted * 1) /
+          weightedMax) *
+        100
+      );
 
   return {
     total,
@@ -106,7 +117,6 @@ export function getSubjectStats(subject) {
     pyqPct: total === 0 ? 0 : Math.round((pyqDone / total) * 100),
     examsPct: total === 0 ? 0 : Math.round((examsAttended / total) * 100),
     notesPct: total === 0 ? 0 : Math.round((notesCompleted / total) * 100),
-    customCounts,
     overall,
     revised,
     pyqDone,
@@ -125,20 +135,17 @@ export function getGlobalStats(subjects) {
 
   subjects.forEach((s) => {
     const chapters = s.chapters || [];
-    const customCols = s.customColumns || [];
-    const perChapter = 4 + customCols.length;
+    const columns = s.columns || [];
+    const perChapter = columns.length;
     totalChapters += chapters.length;
     chapters.forEach((ch) => {
+      const fields = ch.fields || {};
       totalPossible += perChapter;
-      if (ch.revised) totalChecked++;
-      if (ch.pyqDone) {
-        totalChecked++;
-        totalPyqs++;
-      }
-      if (ch.examsAttended) totalChecked++;
-      if (ch.notesCompleted) totalChecked++;
-      customCols.forEach((col) => {
-        if (ch.customFields?.[col.id]) totalChecked++;
+      columns.forEach((col) => {
+        if (fields[col.id]) {
+          totalChecked++;
+          if (col.id === 'pyqs') totalPyqs++;
+        }
       });
     });
     const overall = getSubjectStats(s).overall;

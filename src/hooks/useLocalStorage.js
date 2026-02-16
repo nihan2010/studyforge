@@ -6,6 +6,8 @@ import {
   createSubject,
   createChapter,
   generateId,
+  buildEmptyFields,
+  DEFAULT_COLUMNS,
 } from '../data/defaultData';
 
 export function useLocalStorage() {
@@ -55,7 +57,7 @@ export function useLocalStorage() {
     });
   }, []);
 
-  const bulkUpdateChapters = useCallback((subjectId, chapterIds, updates) => {
+  const bulkUpdateChapters = useCallback((subjectId, chapterIds, updater) => {
     const idSet = new Set(chapterIds);
     setDataState((prev) => ({
       ...prev,
@@ -65,7 +67,9 @@ export function useLocalStorage() {
               ...s,
               lastUpdated: new Date().toISOString(),
               chapters: s.chapters.map((c) =>
-                idSet.has(c.id) ? { ...c, ...updates } : c
+                idSet.has(c.id)
+                  ? (typeof updater === 'function' ? updater(c, s) : { ...c, ...updater })
+                  : c
               ),
             }
           : s
@@ -122,7 +126,19 @@ export function useLocalStorage() {
           ? {
               ...s,
               lastUpdated: new Date().toISOString(),
-              chapters: [...s.chapters, createChapter(chapterOverrides)],
+              chapters: [
+                ...s.chapters,
+                createChapter(
+                  {
+                    ...chapterOverrides,
+                    fields: {
+                      ...buildEmptyFields(s.columns || DEFAULT_COLUMNS),
+                      ...(chapterOverrides.fields || {}),
+                    },
+                  },
+                  s.columns || DEFAULT_COLUMNS
+                ),
+              ],
             }
           : s
       ),
@@ -167,12 +183,12 @@ export function useLocalStorage() {
       ...prev,
       subjects: prev.subjects.map((s) => {
         if (s.id !== subjectId) return s;
-        const customColumns = [...(s.customColumns || []), { id, label }];
+        const columns = [...(s.columns || DEFAULT_COLUMNS), { id, label }];
         const chapters = s.chapters.map((c) => ({
           ...c,
-          customFields: { ...(c.customFields || {}), [id]: false },
+          fields: { ...(c.fields || buildEmptyFields(columns)), [id]: false },
         }));
-        return { ...s, customColumns, chapters, lastUpdated: new Date().toISOString() };
+        return { ...s, columns, chapters, lastUpdated: new Date().toISOString() };
       }),
     }));
   }, []);
@@ -185,7 +201,7 @@ export function useLocalStorage() {
           ? {
               ...s,
               lastUpdated: new Date().toISOString(),
-              customColumns: (s.customColumns || []).map((col) =>
+              columns: (s.columns || DEFAULT_COLUMNS).map((col) =>
                 col.id === columnId ? { ...col, label: newLabel } : col
               ),
             }
@@ -199,12 +215,12 @@ export function useLocalStorage() {
       ...prev,
       subjects: prev.subjects.map((s) => {
         if (s.id !== subjectId) return s;
-        const customColumns = (s.customColumns || []).filter((c) => c.id !== columnId);
+        const columns = (s.columns || DEFAULT_COLUMNS).filter((c) => c.id !== columnId);
         const chapters = s.chapters.map((c) => {
-          const { [columnId]: _, ...rest } = c.customFields || {};
-          return { ...c, customFields: rest };
+          const { [columnId]: _removed, ...rest } = c.fields || {};
+          return { ...c, fields: rest };
         });
-        return { ...s, customColumns, chapters };
+        return { ...s, columns, chapters };
       }),
     }));
   }, []);
@@ -214,18 +230,13 @@ export function useLocalStorage() {
       ...prev,
       subjects: prev.subjects.map((s) => {
         if (s.id !== subjectId) return s;
+        const columns = s.columns || DEFAULT_COLUMNS;
         return {
           ...s,
           lastUpdated: new Date().toISOString(),
           chapters: s.chapters.map((ch) => ({
             ...ch,
-            revised: false,
-            pyqDone: false,
-            examsAttended: false,
-            notesCompleted: false,
-            customFields: Object.fromEntries(
-              Object.keys(ch.customFields || {}).map((k) => [k, false])
-            ),
+            fields: buildEmptyFields(columns),
           })),
         };
       }),

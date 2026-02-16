@@ -52,17 +52,14 @@ export function SubjectPage() {
     let list = [...subject.chapters];
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      list = list.filter((c) => c.chapterName.toLowerCase().includes(q));
+      list = list.filter((c) => (c.title || '').toLowerCase().includes(q));
     }
     if (filterIncomplete) {
-      list = list.filter(
-        (c) =>
-          !c.revised ||
-          !c.pyqDone ||
-          !c.examsAttended ||
-          !c.notesCompleted ||
-          Object.values(c.customFields || {}).some((v) => !v)
-      );
+      const columns = subject.columns || [];
+      list = list.filter((c) => {
+        const fields = c.fields || {};
+        return columns.some((col) => !fields[col.id]);
+      });
     }
     if (filterHighPriority) {
       list = list.filter((c) => c.highPriority);
@@ -126,111 +123,115 @@ export function SubjectPage() {
   const isComplete = stats.overall >= 100 && stats.total > 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xl font-bold text-dark-text truncate">{subject.name}</h2>
-            {isComplete && (
-              <span className="text-xs font-medium px-2 py-1 rounded bg-emerald-500/20 text-emerald-400">
-                100% Complete
-              </span>
+    <div className="h-full flex flex-col p-4 md:p-6 lg:p-8 gap-6 overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 shrink-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl font-bold text-dark-text truncate">{subject.name}</h2>
+              {isComplete && (
+                <span className="text-xs font-medium px-2 py-1 rounded bg-emerald-500/20 text-emerald-400">
+                  100% Complete
+                </span>
+              )}
+              <button
+                onClick={() => { setRenameValue(subject.name); setShowRename(true); }}
+                className="text-sm text-dark-muted hover:text-dark-text"
+              >
+                Rename
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => { setExamDateInput(subject.examDate || ''); setShowExamDate(true); }}
+                className="px-3 py-1.5 text-sm border border-dark-border text-dark-muted hover:text-dark-text rounded-md"
+              >
+                {subject.examDate ? 'Edit exam date' : 'Set exam date'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setResetConfirm(true)}
+                className="px-3 py-1.5 text-sm border border-dark-border text-dark-muted hover:text-dark-text rounded-md"
+              >
+                Reset Progress
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteSubjectConfirm(true)}
+                className="px-3 py-1.5 text-sm border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-md"
+              >
+                Delete Subject
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 mb-4 shrink-0">
+            <input
+              type="search"
+              placeholder="Search chapters..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 min-w-0 px-4 py-2 bg-dark-card border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:ring-2 focus:ring-dark-accent"
+            />
+            <label className="flex items-center gap-2 text-sm text-dark-muted cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filterIncomplete}
+                onChange={(e) => setFilterIncomplete(e.target.checked)}
+                className="rounded border-dark-border text-dark-accent"
+              />
+              Incomplete only
+            </label>
+            <label className="flex items-center gap-2 text-sm text-dark-muted cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filterHighPriority}
+                onChange={(e) => setFilterHighPriority(e.target.checked)}
+                className="rounded border-dark-border text-dark-accent"
+              />
+              High priority
+            </label>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            {subject.chapters?.length === 0 ? (
+              <div className="border border-dark-border rounded-lg bg-dark-card p-12 text-center">
+                <p className="text-dark-muted mb-4">No chapters yet. Add one to start tracking.</p>
+                <button
+                  type="button"
+                  onClick={() => { addChapter(subject.id); addToast('Chapter added'); }}
+                  className="px-4 py-2 bg-dark-accent text-white rounded-lg text-sm font-medium"
+                >
+                  Add Chapter
+                </button>
+              </div>
+            ) : (
+              <ChapterTable
+                subject={subject}
+                filteredChapters={filteredChapters}
+                onUpdateChapter={updateChapter}
+                onDeleteChapter={(sid, cid) => setDeleteChapterTarget({ subjectId: sid, chapterId: cid })}
+                onAddChapter={() => { addChapter(subject.id); addToast('Chapter added'); }}
+                onReorderChapters={reorderChapters}
+                onBulkUpdate={bulkUpdateChapters}
+                onBulkDelete={(sid, ids) => { bulkDeleteChapters(sid, ids); addToast(`${ids.length} chapter(s) deleted`); }}
+                onAddCustomColumn={(sid, label) => { addCustomColumn(sid, label); addToast('Column added'); }}
+                onRenameCustomColumn={renameCustomColumn}
+                onRemoveCustomColumn={(sid, colId) => { removeCustomColumn(sid, colId); addToast('Column removed'); }}
+                onToast={addToast}
+                compact={settings.compactTable}
+              />
             )}
-            <button
-              onClick={() => { setRenameValue(subject.name); setShowRename(true); }}
-              className="text-sm text-dark-muted hover:text-dark-text"
-            >
-              Rename
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => { setExamDateInput(subject.examDate || ''); setShowExamDate(true); }}
-              className="px-3 py-1.5 text-sm border border-dark-border text-dark-muted hover:text-dark-text rounded-md"
-            >
-              {subject.examDate ? 'Edit exam date' : 'Set exam date'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setResetConfirm(true)}
-              className="px-3 py-1.5 text-sm border border-dark-border text-dark-muted hover:text-dark-text rounded-md"
-            >
-              Reset Progress
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteSubjectConfirm(true)}
-              className="px-3 py-1.5 text-sm border border-red-500/50 text-red-400 hover:bg-red-500/10 rounded-md"
-            >
-              Delete Subject
-            </button>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <input
-            type="search"
-            placeholder="Search chapters..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 min-w-0 px-4 py-2 bg-dark-card border border-dark-border rounded-lg text-dark-text placeholder-dark-muted focus:outline-none focus:ring-2 focus:ring-dark-accent"
-          />
-          <label className="flex items-center gap-2 text-sm text-dark-muted cursor-pointer">
-            <input
-              type="checkbox"
-              checked={filterIncomplete}
-              onChange={(e) => setFilterIncomplete(e.target.checked)}
-              className="rounded border-dark-border text-dark-accent"
-            />
-            Incomplete only
-          </label>
-          <label className="flex items-center gap-2 text-sm text-dark-muted cursor-pointer">
-            <input
-              type="checkbox"
-              checked={filterHighPriority}
-              onChange={(e) => setFilterHighPriority(e.target.checked)}
-              className="rounded border-dark-border text-dark-accent"
-            />
-            High priority
-          </label>
-        </div>
-
-        {subject.chapters?.length === 0 ? (
-          <div className="border border-dark-border rounded-lg bg-dark-card p-12 text-center">
-            <p className="text-dark-muted mb-4">No chapters yet. Add one to start tracking.</p>
-            <button
-              type="button"
-              onClick={() => { addChapter(subject.id); addToast('Chapter added'); }}
-              className="px-4 py-2 bg-dark-accent text-white rounded-lg text-sm font-medium"
-            >
-              Add Chapter
-            </button>
-          </div>
-        ) : (
-          <ChapterTable
-            subject={subject}
-            filteredChapters={filteredChapters}
-            onUpdateChapter={updateChapter}
-            onDeleteChapter={(sid, cid) => setDeleteChapterTarget({ subjectId: sid, chapterId: cid })}
-            onAddChapter={() => { addChapter(subject.id); addToast('Chapter added'); }}
-            onReorderChapters={reorderChapters}
-            onBulkUpdate={bulkUpdateChapters}
-            onBulkDelete={(sid, ids) => { bulkDeleteChapters(sid, ids); addToast(`${ids.length} chapter(s) deleted`); }}
-            onAddCustomColumn={(sid, label) => { addCustomColumn(sid, label); addToast('Column added'); }}
-            onRenameCustomColumn={renameCustomColumn}
-            onRemoveCustomColumn={(sid, colId) => { removeCustomColumn(sid, colId); addToast('Column removed'); }}
-            onToast={addToast}
-            compact={settings.compactTable}
-          />
+        {settings.showAnalyticsPanel && !settings.focusMode && (
+          <aside className="w-full lg:w-72 shrink-0 overflow-y-auto">
+            <ProgressPanel subject={subject} />
+          </aside>
         )}
       </div>
-
-      {settings.showAnalyticsPanel && !settings.focusMode && (
-        <aside className="w-full lg:w-72 shrink-0">
-          <ProgressPanel subject={subject} />
-        </aside>
-      )}
 
       <Modal open={showRename} onClose={() => { setShowRename(false); setRenameValue(''); }} title="Rename Subject">
         <input
